@@ -1,0 +1,5 @@
+requests
+openpyxl
+PyYAML
+PySide6
+PySide6-WebEngine

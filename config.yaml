@@ -1,0 +1,327 @@
+# ============================================================
+#  文献日报 · 主配置
+#  改完直接保存，下次运行生效，不用改代码
+# ============================================================
+
+# ---------- 1. 检索 ----------
+search:
+  lookback_days: 14       # 每次回溯几天。OpenAlex 收录有 1~3 天延迟，14 天最稳；已推送过的会自动去重
+  per_topic_limit: 400    # 每个主题最多取多少条
+  types: [article, review]  # 只保留期刊论文和综述
+  include_preprints: false  # 是否收录 ChemRxiv / arXiv 预印本
+  email: ""               # 填你的邮箱（Crossref/OpenAlex 礼貌池，不填也能跑）
+
+openalex:
+  # 强烈建议申请免费 key：https://openalex.org/settings/api （每天 $1，独立额度）
+  # 不填也能跑：共用 IP 的 $0.10/天，容易被刷爆；爆了会自动切 Crossref 免费通道
+  # 额度每天 UTC 0 点重置（北京时间早上 8 点）
+  api_key: ""
+
+# ---------- 2. 出版社白名单 ----------
+# 左边是显示名，右边是 OpenAlex 的 host_organization_name 匹配规则（子串，不区分大小写）
+publishers:
+  ACS:      ["American Chemical Society"]
+  Wiley:    ["Wiley"]
+  Nature:   ["Nature Portfolio", "Springer Nature"]
+  Science:  ["American Association for the Advancement of Science"]
+  Elsevier: ["Elsevier"]
+  RSC:      ["Royal Society of Chemistry"]
+  Cell:     ["Cell Press"]      # Chem / Joule / Matter 等；不需要就删掉这行
+
+allow_other_publishers: false   # false = 白名单以外的期刊直接丢弃
+
+# ---------- 3. 主题（核心，随便加） ----------
+# query      : 拿去检索的布尔式（A|B = 或，引号 = 短语）
+# anchors    : 必须命中其一，才可能归入该主题
+# require_all: 多组“与”条件，每组至少命中一个；例：光催化 = (光催化类词) 且 (产氢类词)
+# keywords   : 命中即加分，标题权重高、摘要权重低
+topics:
+  - name: COF
+    color: "#2E7D6F"
+    query: '"covalent organic framework"|COF|COFs|"covalent triazine framework"'
+    backup_queries: ["covalent organic framework", "covalent triazine framework"]
+    anchors:
+      - covalent organic framework
+      - COF
+      - COFs
+      - covalent triazine framework
+    keywords:
+      - covalent organic framework
+      - COF
+      - COFs
+      - reticular chemistry
+      - covalent triazine framework
+      - COF membrane
+      - imine-linked
+      - ketoenamine
+      - hydrazone-linked
+      - vinylene-linked
+      - porphyrin COF
+      - COF photocatalyst
+      - crystalline porous framework
+      - linker
+      - building block
+
+  - name: 光催化产氢
+    color: "#1F6FB2"
+    query: '"photocatalytic hydrogen"|"photocatalytic water splitting"|"photocatalytic H2"|"hydrogen evolution"|"water splitting"|"solar hydrogen"'
+    backup_queries: ["photocatalytic hydrogen production", "photocatalytic water splitting"]
+    require_all:
+      - [photocatalytic, photocatalysis, photogenerated, "light-driven", "solar-driven"]
+      - ["hydrogen evolution", "H2 evolution", "H2 production", "hydrogen production", "water splitting", "water reduction", "hydrogen generation", "H2 generation"]
+    exclude:
+      - hydrogen peroxide
+      - H2O2
+      - hydrogenation
+    anchors: []
+    keywords:
+      - photocatalytic
+      - photocatalyst
+      - hydrogen evolution reaction
+      - hydrogen evolution
+      - water splitting
+      - hydrogen production
+      - H2 production
+      - H2 generation
+      - solar-to-hydrogen
+      - STH efficiency
+      - apparent quantum yield
+      - AQY
+      - sacrificial agent
+      - cocatalyst
+      - Z-scheme
+      - heterojunction
+      - photogenerated carrier
+
+  - name: OLED
+    color: "#C56A1E"
+    query: 'OLED|"organic light-emitting"|"organic light emitting"|electroluminescence|TADF|"thermally activated delayed fluorescence"'
+    backup_queries: ["organic light-emitting diode", "thermally activated delayed fluorescence", "OLED"]
+    anchors:
+      - OLED
+      - organic light-emitting
+      - organic light emitting
+      - electroluminescence
+      - TADF
+      - thermally activated delayed fluorescence
+    keywords:
+      - OLED
+      - organic light-emitting diode
+      - organic light emitting diode
+      - TADF
+      - thermally activated delayed fluorescence
+      - emitter
+      - host material
+      - blue emitter
+      - deep-blue
+      - external quantum efficiency
+      - EQE
+      - hyperfluorescence
+      - MR-TADF
+      - phosphorescent
+      - Ir(III) complex
+      - Pt(II) complex
+      - exciplex
+      - efficiency roll-off
+      - LT95
+      - display
+      - lighting
+
+  - name: 锂离子电池
+    color: "#6B5BD2"
+    query: '"lithium-ion battery"|"lithium ion battery"|"Li-ion"|"lithium metal battery"|"lithium batteries"'
+    backup_queries: ["lithium-ion battery", "lithium metal battery"]
+    anchors:
+      - lithium-ion battery
+      - lithium ion battery
+      - Li-ion
+      - lithium metal battery
+      - lithium battery
+    keywords:
+      - cathode
+      - anode
+      - silicon anode
+      - NCM
+      - LiFePO4
+      - high-nickel
+      - solid electrolyte interphase
+      - SEI
+      - electrolyte additive
+      - fast charging
+      - energy density
+      - cycling stability
+      - capacity retention
+      - lithium dendrite
+      - solid-state electrolyte
+
+  - name: 锂硫电池
+    color: "#8E7A2E"
+    query: '"lithium-sulfur"|"lithium sulfur"|"lithium–sulfur"|"Li-S"|"Li–S"|"Li2S"|"sulfur cathode"|polysulfide'
+    backup_queries: ["lithium-sulfur battery", "lithium sulfur", "polysulfide"]
+    anchors:
+      - lithium-sulfur
+      - lithium sulfur
+      - lithium–sulfur
+      - Li-S
+      - Li–S
+      - Li2S
+      - sulfur cathode
+    # 冷门方向：放宽标题要求和分数线，避免被光催化/锂电的大流量挤掉
+    min_topic_score: 2
+    min_score: 4
+    require_title_hit: false
+    keywords:
+      - sulfur cathode
+      - polysulfide
+      - polysulfides
+      - shuttle effect
+      - Li2S
+      - Li2S deposition
+      - sulfur host
+      - areal capacity
+      - lean electrolyte
+      - electrolyte-to-sulfur ratio
+      - lithium metal anode
+      - catalytic conversion
+      - separator modification
+      - redox kinetics
+
+  - name: CO2还原
+    color: "#2F8A4C"
+    query: '"CO2 reduction"|"CO2 electroreduction"|"carbon dioxide reduction"|"CO2RR"|"photocatalytic CO2"|"CO2 photoreduction"|"CO2-to"|"CO2 conversion"'
+    backup_queries: ["CO2 reduction", "CO2 electroreduction", "carbon dioxide reduction"]
+    anchors:
+      - CO2 reduction
+      - carbon dioxide reduction
+      - CO2RR
+      - CO2 electroreduction
+      - CO2 photoreduction
+      - photocatalytic CO2
+      - CO2 conversion
+    # 冷门方向：同上，放宽
+    min_topic_score: 2
+    min_score: 4
+    require_title_hit: false
+    keywords:
+      - faradaic efficiency
+      - FE
+      - selectivity
+      - copper catalyst
+      - Cu catalyst
+      - syngas
+      - formate
+      - formic acid
+      - ethylene
+      - C2+
+      - methane
+      - CO
+      - tandem catalyst
+      - gas diffusion electrode
+      - membrane electrode assembly
+      - flow cell
+      - overpotential
+      - single-atom
+      - solar fuel
+
+# ---------- 4. 评分 ----------
+scoring:
+  title_hit: 3          # 关键词出现在标题，每条 +3
+  abstract_hit: 1       # 关键词出现在摘要，每条 +1
+  anchor_bonus: 2       # 命中 anchor 的额外奖励
+  title_anchor_bonus: 2 # anchor 出现在标题里，再 +2（标题点题的文章更相关）
+  min_topic_score: 4    # 单个主题低于此分，不归入该主题（可在 topic 里单独覆盖）
+  min_score: 5          # 出榜分数线（可在 topic 里单独覆盖，冷门方向可调低）
+  review_bonus: 1       # 综述额外加分（方便扫综述）
+  feedback_weight: 1.5  # 收藏/屏蔽反馈的权重
+  max_feedback_bonus: 3 # 反馈最多加/减多少分
+  # 标题里必须出现主题词（标题没提 COF/TADF/光催化产氢的文章，多半只是顺带用到）
+  require_title_hit: true
+  strong_topic_score: 12  # 例外：摘要信号极强（>=12分）时允许标题没命中
+
+# 期刊分层加分（按期刊名正则匹配，不看出版社）
+journal_tiers:
+  - bonus: 5
+    match:
+      - "^Nature$"
+      - "^Science$"
+      - "^Nature (Chemistry|Materials|Energy|Catalysis|Synthesis|Nanotechnology|Photonics|Communications|Reviews|Sustainability|Water)$"
+      - "^Science Advances$"
+      - "^Joule$"
+      - "^Chem$"
+      - "^Matter$"
+      - "^Cell Reports Physical Science$"
+  - bonus: 3
+    match:
+      - "Journal of the American Chemical Society"
+      - "Angewandte Chemie"
+      - "^Advanced Materials$"
+      - "Advanced Energy Materials"
+      - "Advanced Functional Materials"
+      - "Energy & Environmental Science"
+      - "Chemical Reviews"
+      - "Chemical Society Reviews"
+      - "ACS Energy Letters"
+      - "ACS Nano"
+      - "Nano Letters"
+      - "Chemical Science"
+      - "Journal of Materials Chemistry A"
+      - "CCS Chemistry"
+      - "National Science Review"
+      - "Science Bulletin"
+      - "Advanced Science"
+      - "Materials Horizons"
+      - "Light: Science"
+      - "InfoMat"
+      - "Journal of Energy Chemistry"
+      - "ACS Catalysis"
+      - "Applied Catalysis B"
+
+# ---------- 5. 翻译 ----------
+translation:
+  enabled: true
+  # auto = 有道(免key) → MyMemory(免key) → 放弃；也可以指定 deepseek / zhipu / baidu / none
+  backend: auto
+  mode: both              # title = 仅标题；abstract = 仅摘要；both = 标题和摘要
+  abstract_max_chars: 700   # 摘要只翻前 N 个字符（够判断就行，省时间省钱）
+  max_items: 200            # 单次最多翻译多少篇（按分数从高到低）
+  workers: 3                # 并发数，太大容易被封
+  # 下面这些 key 建议写在 secrets.yaml 里，不要写在这里
+  mymemory_email: ""
+  deepseek: { api_key: "", model: "deepseek-chat", base_url: "https://api.deepseek.com" }
+  zhipu:    { api_key: "", model: "glm-4-flash", base_url: "https://open.bigmodel.cn/api/paas/v4" }
+  baidu:    { appid: "", secret: "" }
+
+# ---------- 6. 输出 ----------
+output:
+  dir: out
+  html: true
+  excel: true
+  open_after_run: true      # 跑完自动打开 HTML 日报
+  top_n_detail: 160         # 日报默认最多显示多少篇（也可用 --top 覆盖）
+  max_per_topic: 40         # 每个方向最多进多少篇（0 = 不限）。冷门方向靠它保住版面
+
+# ---------- 7. 校园网门户 ----------
+portal:
+  check: true
+  auto_login: false        # 改成 true 后，检测到出版社打不开会自动登录（账号密码填在 secrets.yaml）
+  urls: []                 # 可在 GUI 中填写门户预检网址
+  sites:
+    - name: 校园网
+      url: ""              # 可在 GUI 中填写门户登录地址
+    - name: 期刊数据库
+      url: ""              # 可在 GUI 中填写门户登录地址
+  hint: "在 GUI 中填写门户登录网址；未登录时只使用 OpenAlex/Crossref 元数据（收录可能延迟）。"
+
+# ---------- 8. 邮件推送 ----------
+# 填好 smtp 授权码后，把 enabled 改成 true（或运行时加 --email）
+# QQ邮箱：设置 → 账户 → 开启 SMTP → 生成授权码（password 填授权码，不是登录密码）
+email:
+  enabled: false
+  smtp_host: "smtp.qq.com"
+  smtp_port: 465
+  use_ssl: true
+  user: ""
+  password: ""        # QQ/163 的“授权码”，不是登录密码
+  to: [""]
+  subject_prefix: "[文献日报]"
+  max_items: 40
